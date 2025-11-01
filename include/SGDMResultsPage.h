@@ -18,6 +18,7 @@ public:
     static void addWarning(const SGXString& x);
     static void exitPage();
     static void showExitButton();
+    static void terminate();
 };
 
 #endif // SGDMRESULTSPAGE_H

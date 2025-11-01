@@ -43,6 +43,8 @@ target_sources(_ocu_entation_app
     PRIVATE "src/SGDMUserInterface.cpp"
     PRIVATE "src/SGDMDocumentationParsing.cpp"
     PRIVATE "src/SGDMResultsPage.cpp"
+    PRIVATE "src/SGDMCppParsing.cpp"
+    PRIVATE "src/SGDMCppClass.cpp"
 )
 find_package(SGEXTN REQUIRED COMPONENTS SG_Containers SG_Core SG_FileSystem SG_Widgets EntryPoint_SG)
 target_link_libraries(_ocu_entation_app

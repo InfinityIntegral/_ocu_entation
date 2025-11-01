@@ -3,21 +3,26 @@
 
 #include <SGXString.h>
 #include <SGLVector.h>
+#include <SGDMCppMember.h>
 
-class SGDMCppMember;
+template <typename K, typename V, typename EqualityCheck, typename HashFunction> class SGLUnorderedMap;
+template <typename T> class SGLEqualsTo;
+template <typename T> class SGLHash;
 class SGDMCppClass {
-    SGDMCppClass();
-    static SGLVector<SGDMCppClass*> listOfClasses;
+public:
+    SGDMCppClass() = default;
+    static SGLUnorderedMap<SGXString, SGDMCppClass*, SGLEqualsTo<SGXString>, SGLHash<SGXString>>* allClasses;
     static SGXString projectName;
     SGXString headerPath;
     SGXString sourcePath;
-    SGXString headerName;
     SGXString moduleName;
-    SGDMCppClass* parentClass;
-    SGLVector<SGDMCppClass*> childrenClass;
+    SGXString className;
+    SGXString templateInfo;
+    SGXString parentClass;
+    SGLVector<SGXString> childrenClass;
     SGXString briefDescription;
     SGXString detailedDescription;
-    SGLVector<SGDMCppMember*> members;
+    SGLVector<SGDMCppMember> members;
     SGXString implementationDetails;
 };
 

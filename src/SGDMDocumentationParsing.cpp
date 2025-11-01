@@ -1,13 +1,13 @@
 #include <SGDMDocumentationParsing.h>
 #include <SGDMResultsPage.h>
 #include <SGXString.h>
+#include <SGDMCppParsing.h>
 
 bool SGDMDocumentationParsing::isWritingHTML = false;
+SGXString SGDMDocumentationParsing::sourcePath = "";
+SGXString SGDMDocumentationParsing::destinationPath = "";
 
 void SGDMDocumentationParsing::startParsingOperation(){
-    SGDMResultsPage::updateInfo("testing info");
-    SGDMResultsPage::addWarning("warning 1");
-    SGDMResultsPage::addWarning("warning 2");
-    SGDMResultsPage::addWarning("warning 3");
-    SGDMResultsPage::showExitButton();
+    SGDMResultsPage::updateInfo("searching for C++ files");
+    SGDMCppParsing::getFilesList();
 }

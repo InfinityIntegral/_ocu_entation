@@ -5,7 +5,11 @@
 #include <SGLVector.h>
 
 class SGDMCppMember {
-    SGDMCppMember();
+public:
+    SGDMCppMember() = default;
+    bool isFunction;
+    bool isStatic;
+    bool isPureVirtual;
     SGXString functionSignature;
     SGXString functionName;
     SGXString normalisedSignature;

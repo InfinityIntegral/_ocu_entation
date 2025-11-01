@@ -2,6 +2,7 @@
 #include <SGDMUserInterface.h>
 #include <SGXString.h>
 #include <SGXCentral.h>
+#include <SGDMResultsPage.h>
 
 namespace{
 void app_init(){
@@ -10,6 +11,7 @@ void app_init(){
     SGXCentral::organisationName = "05524F.sg (Singapore)";
     SGXCentral::folderName = "_ocu_entation";
     SGXCentral::customInitialise = &SGDMUserInterface::initialise;
+    SGXCentral::customTerminate = &SGDMResultsPage::terminate;
 }
 }
 

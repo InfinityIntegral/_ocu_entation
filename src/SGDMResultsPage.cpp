@@ -7,6 +7,10 @@
 #include <SGWHorizontalAlignment.h>
 #include <SGWSequentialScrollView.h>
 #include <SGWTextButton.h>
+#include <SGDMCppClass.h>
+#include <SGLUnorderedMap.h>
+#include <SGLEqualsTo.h>
+#include <SGLHash.h>
 
 SGWBackground* SGDMResultsPage::pageBackground = nullptr;
 SGWLabel* SGDMResultsPage::currentInfo = nullptr;
@@ -41,8 +45,19 @@ void SGDMResultsPage::addWarning(const SGXString &x){
 
 void SGDMResultsPage::exitPage(){
     SGWBackground::disable(SGDMResultsPage::pageBackground);
+    SGDMResultsPage::terminate();
 }
 
 void SGDMResultsPage::showExitButton(){
     new SGWTextButton(SGDMResultsPage::pageBackground, "done", &SGDMResultsPage::exitPage, 0.5f, -1.5f, 1.0f, -1.5f, 0.0f, 3.0f, 0.0f, 1.0f);
+}
+
+void SGDMResultsPage::terminate(){
+    if(SGDMCppClass::allClasses != nullptr){
+        for(SGLUnorderedMap<SGXString, SGDMCppClass*, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::ConstIterator i=(*SGDMCppClass::allClasses).constBegin(); i != (*SGDMCppClass::allClasses).constEnd(); i++){
+            delete i.value();
+        }
+    }
+    delete SGDMCppClass::allClasses;
+    SGDMCppClass::allClasses = nullptr;
 }
