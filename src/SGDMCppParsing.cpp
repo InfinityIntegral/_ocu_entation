@@ -13,12 +13,14 @@
 #include <SGLEqualsTo.h>
 #include <SGLHash.h>
 #include <SGLArray.h>
+#include <SGDMCppMember.h>
 
 int SGDMCppParsing::currentFileNumber = 0;
 SGLVector<SGXString>* SGDMCppParsing::filesList = nullptr;
 SGLVector<SGLPair<SGXString, SGXString>>* SGDMCppParsing::classList = nullptr;
 int SGDMCppParsing::currentClassNumber = 0;
 SGLVector<SGLPair<SGXString, SGXString>>* SGDMCppParsing::membersList = nullptr;
+int SGDMCppParsing::currentMemberNumber = 0;
 
 void SGDMCppParsing::getFilesList(){
     SGDMResultsPage::updateInfo("searching for C++ files");
@@ -88,6 +90,14 @@ void SGDMCppParsing::processNextFile(){
             }
             const SGXString classContents = fileContents.substring(startIndex + 1, endIndex - startIndex);
             if(classContents.substringLeft(classContents.findFirstFromLeft(SGXChar('{'))).count(SGXChar('<')) <= 1){(*SGDMCppParsing::classList).pushBack(SGLPair<SGXString, SGXString>(currentFile, classContents));}
+            else{
+                SGXString preimplementation = classContents.substringLeft(classContents.findFirstFromLeft(SGXChar('{')));
+                if(preimplementation.contains("Iterator")){
+                    const SGXString implementation = classContents.substringRight(classContents.length() - preimplementation.length());
+                    preimplementation = preimplementation.substringLeft(preimplementation.findFirstFromRight(SGXChar('<'))) + preimplementation.substringRight(preimplementation.length() - preimplementation.findFirstFromRight(SGXChar('>')) - 1);
+                    (*SGDMCppParsing::classList).pushBack(SGLPair<SGXString, SGXString>(currentFile, preimplementation + implementation));
+                }
+            }
         }
         fileContents = fileContents.substringRight(fileContents.length() - nextStart);
     }
@@ -128,11 +138,12 @@ void SGDMCppParsing::processNextClass(){
     (*classStruct).className.removeLeadingTrailingWhitespace();
     (*classStruct).templateInfo = currentClass.substringLeft(currentClass.findFirstFromLeft("class "));
     (*classStruct).templateInfo.removeLeadingTrailingWhitespace();
-    if(preimplementation.contains(SGXChar(':')) == false){(*classStruct).parentClass = "";}
+    if(preimplementation.contains(" : ") == false){(*classStruct).parentClass = "";}
     else{
         (*classStruct).parentClass = preimplementation.substringRight(preimplementation.length() - preimplementation.findFirstFromRight("public ") - 7);
         (*classStruct).parentClass.removeLeadingTrailingWhitespace();
     }
+    (*classStruct).members = SGLVector<SGDMCppMember>();
     (*SGDMCppClass::allClasses).insert((*classStruct).className, classStruct);
     
     const SGXString implementation = currentClass.substring(currentClass.findFirstFromLeft(SGXChar('{')) + 1, currentClass.findFirstFromRight(SGXChar('}')) - 1 - currentClass.findFirstFromLeft(SGXChar('{')));
@@ -147,7 +158,9 @@ void SGDMCppParsing::processNextClass(){
         "protected:",
         "private:",
         "{",
-        "}"
+        "}",
+        "class ",
+        "friend "
     );
     int index = -1;
     for(int i=0; i<members.length(); i++){
@@ -184,4 +197,115 @@ void SGDMCppParsing::linkInheritance(){
             (*(*SGDMCppClass::allClasses).at((*i.value()).parentClass)).childrenClass.pushBack(i.key());
         }
     }
+    SGXTimer::singleCall(0.0f, &SGDMCppParsing::processNextMember);
+}
+
+void SGDMCppParsing::processNextMember(){
+    if(SGDMCppParsing::currentMemberNumber == (*SGDMCppParsing::membersList).length()){
+        SGDMResultsPage::updateInfo("done parsing C++ members");
+        delete SGDMCppParsing::membersList;
+        SGDMCppParsing::membersList = nullptr;
+        SGDMCppParsing::currentMemberNumber = 0;
+        return;
+    }
+    
+    const SGXString currentClass = (*SGDMCppParsing::membersList).at(SGDMCppParsing::currentMemberNumber).first;
+    const SGXString currentMember = (*SGDMCppParsing::membersList).at(SGDMCppParsing::currentMemberNumber).second;
+    SGDMCppParsing::currentMemberNumber++;
+    SGDMResultsPage::updateInfo(SGXString("parsing ") + SGXString::intToString(SGDMCppParsing::currentMemberNumber) + " of " + SGXString::intToString((*SGDMCppParsing::membersList).length()) + " members");
+    
+    SGDMCppMember memberStruct;
+    if(currentMember.contains("static ") == true){memberStruct.isStatic = true;}
+    else{memberStruct.isStatic = false;}
+    if(currentMember.contains(" = 0;") == true){memberStruct.isPureVirtual = true;}
+    else{memberStruct.isPureVirtual = false;}
+    if(currentMember.findFirstFromLeft(SGXChar('(')) > 0 && currentMember.at(currentMember.findFirstFromLeft(SGXChar('(')) - 1) != ' '){memberStruct.isFunction = true;}
+    else{memberStruct.isFunction = false;}
+    SGXString s = "";
+    SGLVector<SGXString> identifiers;
+    for(int i=0; i<currentMember.length(); i++){
+        if(currentMember.at(i).isEnglishAlphanumeric() == true){s += currentMember.at(i);}
+        else{
+            if(s.length() >= 8 && s.substringLeft(8) == "operator" && (
+                (currentMember.at(i) != '(' && currentMember.at(i) != ')' && currentMember.at(i) != ' ') || ((s.contains("()") == false && currentMember.at(i) == '(' && currentMember.at(i + 1) == ')') || (s.contains("()") == false && currentMember.at(i - 1) == '(' && currentMember.at(i) == ')')))){
+                s += currentMember.at(i);
+                continue;
+            }
+            if(s != ""){identifiers.pushBack(s);}
+            s = "";
+        }
+    }
+    for(int i=0; i<identifiers.length(); i++){
+        if(isCppKeyword(identifiers.at(i)) == false){
+            memberStruct.functionName = identifiers.at(i);
+            break;
+        }
+    }
+    if(currentMember.length() > currentClass.length() + 1 && currentMember.substringLeft(currentClass.length() + 1) == currentClass + "("){memberStruct.functionName = currentClass;}
+    s = "";
+    SGXString signature = "";
+    for(int i=0; i<currentMember.length(); i++){
+        if(currentMember.at(i).isEnglishAlphanumeric() == true){s += currentMember.at(i);}
+        else if(s != ""){
+            if(SGDMCppParsing::isCppKeyword(s) == true || s == memberStruct.functionName){signature += (s + "_");}
+            s = "";
+        }
+        if(currentMember.at(i) == '*'){signature += "ptr_";}
+        else if(currentMember.at(i) == '&'){signature += "ref_";}
+        else if(currentMember.at(i) == '(' && currentMember.at(i+1) == ')'){
+            i++;
+            signature += "func_";
+        }
+        else if(currentMember.at(i) == ':' && currentMember.at(i+1) == ':'){
+            i++;
+            signature += "inclass_";
+        }
+        else if(currentMember.at(i) == '+' && currentMember.at(i+1) == '+'){
+            i++;
+            signature += "increment_";
+        }
+        else if(currentMember.at(i) == '-' && currentMember.at(i+1) == '-'){
+            i++;
+            signature += "decrement_";
+        }
+        else if(currentMember.at(i) == '=' && currentMember.at(i+1) == '='){
+            i++;
+            signature += "equal_";
+        }
+        else if(currentMember.at(i) == '!' && currentMember.at(i+1) == '='){
+            i++;
+            signature += "notequal_";
+        }
+        else if(currentMember.at(i) == '+'){signature += "plus_";}
+        else if(currentMember.at(i) == '-'){signature += "minus_";}
+        else if(currentMember.at(i) == '/'){signature += "div_";}
+    }
+    memberStruct.normalisedSignature = signature;
+    (*(*SGDMCppClass::allClasses).at(currentClass)).members.pushBack(memberStruct);
+    
+    SGXTimer::singleCall(0.0f, &SGDMCppParsing::processNextMember);
+}
+
+bool SGDMCppParsing::isCppKeyword(const SGXString &s){
+    if(s.at(0).isEnglishUppercase() == true){return true;}
+    if(s == "nodiscard"){return true;}
+    if(s == "bool"){return true;}
+    if(s == "char"){return true;}
+    if(s == "const"){return true;}
+    if(s == "double"){return true;}
+    if(s == "enum"){return true;}
+    if(s == "float"){return true;}
+    if(s == "friend"){return true;}
+    if(s == "inline"){return true;}
+    if(s == "int"){return true;}
+    if(s == "long"){return true;}
+    if(s == "operator"){return true;}
+    if(s == "short"){return true;}
+    if(s == "signed"){return true;}
+    if(s == "static"){return true;}
+    if(s == "struct"){return true;}
+    if(s == "unsigned"){return true;}
+    if(s == "virtual"){return true;}
+    if(s == "void"){return true;}
+    return false;
 }

@@ -16,6 +16,9 @@ public:
     static void processNextClass();
     static SGLVector<SGLPair<SGXString, SGXString>>* membersList;
     static void linkInheritance();
+    static int currentMemberNumber;
+    static void processNextMember();
+    static bool isCppKeyword(const SGXString& s);
 };
 
 #endif // SGDMCPPPARSING_H
