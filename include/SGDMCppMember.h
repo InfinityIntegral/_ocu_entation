@@ -10,9 +10,11 @@ public:
     bool isFunction;
     bool isStatic;
     bool isPureVirtual;
+    bool isPrivateAPI;
     SGXString functionName;
     SGXString normalisedSignature;
-    SGXString description;
+    SGXString fullDeclaration;
+    SGLVector<SGXString> description;
     SGLVector<SGXString> notes;
     SGLVector<SGXString> warnings;
 };

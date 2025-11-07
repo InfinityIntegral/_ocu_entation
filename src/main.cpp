@@ -11,7 +11,6 @@ void app_init(){
     SGXCentral::organisationName = "05524F.sg (Singapore)";
     SGXCentral::folderName = "_ocu_entation";
     SGXCentral::customInitialise = &SGDMUserInterface::initialise;
-    SGXCentral::customTerminate = &SGDMResultsPage::terminate;
 }
 }
 

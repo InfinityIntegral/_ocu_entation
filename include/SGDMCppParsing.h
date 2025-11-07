@@ -7,6 +7,7 @@ template <typename T1, typename T2> class SGLPair;
 class SGDMCppParsing {
 public:
     SGDMCppParsing() = delete;
+    static void startParsingOperation();
     static void getFilesList();
     static SGLVector<SGXString>* filesList;
     static int currentFileNumber;

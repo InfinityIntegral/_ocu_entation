@@ -4,14 +4,14 @@
 #include <SGXString.h>
 #include <SGLVector.h>
 #include <SGDMCppMember.h>
+#include <SGLUnorderedMap.h>
+#include <SGLEqualsTo.h>
+#include <SGLHash.h>
 
-template <typename K, typename V, typename EqualityCheck, typename HashFunction> class SGLUnorderedMap;
-template <typename T> class SGLEqualsTo;
-template <typename T> class SGLHash;
 class SGDMCppClass {
 public:
     SGDMCppClass() = default;
-    static SGLUnorderedMap<SGXString, SGDMCppClass*, SGLEqualsTo<SGXString>, SGLHash<SGXString>>* allClasses;
+    static SGLUnorderedMap<SGXString, SGDMCppClass, SGLEqualsTo<SGXString>, SGLHash<SGXString>> allClasses;
     static SGXString projectName;
     SGXString headerPath;
     SGXString sourcePath;
@@ -22,7 +22,7 @@ public:
     SGLVector<SGXString> childrenClass;
     SGXString briefDescription;
     SGXString detailedDescription;
-    SGLVector<SGDMCppMember> members;
+    SGLUnorderedMap<SGXString, SGDMCppMember, SGLEqualsTo<SGXString>, SGLHash<SGXString>> members;
     SGXString implementationDetails;
 };
 

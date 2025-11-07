@@ -22,6 +22,11 @@ int SGDMCppParsing::currentClassNumber = 0;
 SGLVector<SGLPair<SGXString, SGXString>>* SGDMCppParsing::membersList = nullptr;
 int SGDMCppParsing::currentMemberNumber = 0;
 
+void SGDMCppParsing::startParsingOperation(){
+    SGDMResultsPage::updateInfo("searching for C++ files");
+    SGDMCppParsing::getFilesList();
+}
+
 void SGDMCppParsing::getFilesList(){
     SGDMResultsPage::updateInfo("searching for C++ files");
     SGDMCppParsing::filesList = new SGLVector<SGXString>();
@@ -53,7 +58,7 @@ void SGDMCppParsing::processNextFile(){
         SGDMCppParsing::filesList = nullptr;
         SGDMCppParsing::currentFileNumber = 0;
         SGDMCppParsing::membersList = new SGLVector<SGLPair<SGXString, SGXString>>();
-        SGDMCppClass::allClasses = new SGLUnorderedMap<SGXString, SGDMCppClass*, SGLEqualsTo<SGXString>, SGLHash<SGXString>>();
+        SGDMCppClass::allClasses = SGLUnorderedMap<SGXString, SGDMCppClass, SGLEqualsTo<SGXString>, SGLHash<SGXString>>();
         SGXTimer::singleCall(0.0f, &SGDMCppParsing::processNextClass);
         return;
     }
@@ -119,11 +124,11 @@ void SGDMCppParsing::processNextClass(){
     SGDMCppParsing::currentClassNumber++;
     SGDMResultsPage::updateInfo(SGXString("parsing ") + SGXString::intToString(SGDMCppParsing::currentClassNumber) + " of " + SGXString::intToString((*SGDMCppParsing::classList).length()) + " classes");
     
-    SGDMCppClass* classStruct = new SGDMCppClass();
-    (*classStruct).headerPath = currentClassFileName.substringRight(currentClassFileName.length() - SGDMDocumentationParsing::sourcePath.length());
-    (*classStruct).sourcePath = (*classStruct).headerPath.replace("include", "src").replace(".h", ".cpp");
-    if(SGXFileSystem::fileExists(SGDMDocumentationParsing::sourcePath + (*classStruct).sourcePath) == false){(*classStruct).sourcePath = "";}
-    (*classStruct).moduleName = SGXFileSystem::getParentName(SGXFileSystem::getParentPath(currentClassFileName));
+    SGDMCppClass classStruct;
+    classStruct.headerPath = currentClassFileName.substringRight(currentClassFileName.length() - SGDMDocumentationParsing::sourcePath.length());
+    classStruct.sourcePath = classStruct.headerPath.replace("include", "src").replace(".h", ".cpp");
+    if(SGXFileSystem::fileExists(SGDMDocumentationParsing::sourcePath + classStruct.sourcePath) == false){classStruct.sourcePath = "";}
+    classStruct.moduleName = SGXFileSystem::getParentName(SGXFileSystem::getParentPath(currentClassFileName));
     const SGXString preimplementation = currentClass.substringLeft(currentClass.findFirstFromLeft(SGXChar('{')));
     SGLArray<SGXString> declarationElements = preimplementation.splitCustomSeparator(SGXChar(' '));
     int indexOfClassKeyword = 0;
@@ -133,22 +138,24 @@ void SGDMCppParsing::processNextClass(){
             break;
         }
     }
-    if(declarationElements.at(indexOfClassKeyword + 1).contains("_DLL") == false){(*classStruct).className = declarationElements.at(indexOfClassKeyword + 1);}
-    else{(*classStruct).className = declarationElements.at(indexOfClassKeyword + 2);}
-    (*classStruct).className.removeLeadingTrailingWhitespace();
-    (*classStruct).templateInfo = currentClass.substringLeft(currentClass.findFirstFromLeft("class "));
-    (*classStruct).templateInfo.removeLeadingTrailingWhitespace();
-    if(preimplementation.contains(" : ") == false){(*classStruct).parentClass = "";}
+    if(declarationElements.at(indexOfClassKeyword + 1).contains("_DLL") == false){classStruct.className = declarationElements.at(indexOfClassKeyword + 1);}
+    else{classStruct.className = declarationElements.at(indexOfClassKeyword + 2);}
+    classStruct.className.cleanWhitespace();
+    classStruct.templateInfo = currentClass.substringLeft(currentClass.findFirstFromLeft("class "));
+    classStruct.templateInfo.cleanWhitespace();
+    if(preimplementation.contains(" : ") == false){classStruct.parentClass = "";}
     else{
-        (*classStruct).parentClass = preimplementation.substringRight(preimplementation.length() - preimplementation.findFirstFromRight("public ") - 7);
-        (*classStruct).parentClass.removeLeadingTrailingWhitespace();
+        classStruct.parentClass = preimplementation.substringRight(preimplementation.length() - preimplementation.findFirstFromRight("public ") - 7);
+        classStruct.parentClass.cleanWhitespace();
     }
-    (*classStruct).members = SGLVector<SGDMCppMember>();
-    (*SGDMCppClass::allClasses).insert((*classStruct).className, classStruct);
+    classStruct.briefDescription = "";
+    classStruct.detailedDescription = "";
+    classStruct.implementationDetails = "";
+    SGDMCppClass::allClasses.insert(classStruct.className, classStruct);
     
     const SGXString implementation = currentClass.substring(currentClass.findFirstFromLeft(SGXChar('{')) + 1, currentClass.findFirstFromRight(SGXChar('}')) - 1 - currentClass.findFirstFromLeft(SGXChar('{')));
     SGLArray<SGXString> members = implementation.splitCustomSeparator(SGXChar('\n'));
-    const SGXString className = (*classStruct).className;
+    const SGXString className = classStruct.className;
     SGLArray<SGXString> excluded(
         className + "(const " + className + "&",
         className + "(" + className + "&&",
@@ -164,7 +171,7 @@ void SGDMCppParsing::processNextClass(){
     );
     int index = -1;
     for(int i=0; i<members.length(); i++){
-        members.at(i).removeLeadingTrailingWhitespace();
+        members.at(i).cleanWhitespace();
     }
     while(index < members.length()-1){
         index++;
@@ -181,6 +188,8 @@ void SGDMCppParsing::processNextClass(){
         for(int i=0; i<excluded.length(); i++){
             if(members.at(index).length() >= excluded.at(i).length() && members.at(index).substringLeft(excluded.at(i).length()) == excluded.at(i)){isExcluded = true;}
         }
+        if(members.at(index).length() >= 11 && members.at(index).substringRight(11) == " = default;"){isExcluded = true;}
+        if(members.at(index).length() >= 10 && members.at(index).substringRight(10) == " = delete;"){isExcluded = true;}
         if(isExcluded == true){continue;}
         if(members.at(index) == ""){continue;}
         if(members.at(index).length() > 3 && members.at(index).substringRight(3) == "{};"){members.at(index) = members.at(index).substringLeft(members.at(index).length() - 6) + ";";}
@@ -192,9 +201,9 @@ void SGDMCppParsing::processNextClass(){
 
 void SGDMCppParsing::linkInheritance(){
     SGDMResultsPage::updateInfo("processing inheritance hierarchy");
-    for(SGLUnorderedMap<SGXString, SGDMCppClass*, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::Iterator i = (*SGDMCppClass::allClasses).begin(); i != (*SGDMCppClass::allClasses).end(); i++){
-        if((*i.value()).parentClass != ""){
-            (*(*SGDMCppClass::allClasses).at((*i.value()).parentClass)).childrenClass.pushBack(i.key());
+    for(SGLUnorderedMap<SGXString, SGDMCppClass, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::Iterator i = SGDMCppClass::allClasses.begin(); i != SGDMCppClass::allClasses.end(); i++){
+        if(i.value().parentClass != ""){
+            SGDMCppClass::allClasses.at(i.value().parentClass).childrenClass.pushBack(i.key());
         }
     }
     SGXTimer::singleCall(0.0f, &SGDMCppParsing::processNextMember);
@@ -206,6 +215,7 @@ void SGDMCppParsing::processNextMember(){
         delete SGDMCppParsing::membersList;
         SGDMCppParsing::membersList = nullptr;
         SGDMCppParsing::currentMemberNumber = 0;
+        SGXTimer::singleCall(0.0f, &SGDMDocumentationParsing::findDocFiles);
         return;
     }
     
@@ -213,8 +223,14 @@ void SGDMCppParsing::processNextMember(){
     const SGXString currentMember = (*SGDMCppParsing::membersList).at(SGDMCppParsing::currentMemberNumber).second;
     SGDMCppParsing::currentMemberNumber++;
     SGDMResultsPage::updateInfo(SGXString("parsing ") + SGXString::intToString(SGDMCppParsing::currentMemberNumber) + " of " + SGXString::intToString((*SGDMCppParsing::membersList).length()) + " members");
+    currentMember.cleanWhitespace();
     
     SGDMCppMember memberStruct;
+    memberStruct.fullDeclaration = currentMember;
+    memberStruct.isPrivateAPI = false;
+    memberStruct.description = SGLVector<SGXString>();
+    memberStruct.warnings = SGLVector<SGXString>();
+    memberStruct.notes = SGLVector<SGXString>();
     if(currentMember.contains("static ") == true){memberStruct.isStatic = true;}
     else{memberStruct.isStatic = false;}
     if(currentMember.contains(" = 0;") == true){memberStruct.isPureVirtual = true;}
@@ -258,7 +274,7 @@ void SGDMCppParsing::processNextMember(){
         }
         else if(currentMember.at(i) == ':' && currentMember.at(i+1) == ':'){
             i++;
-            signature += "inclass_";
+            signature += "mc_";
         }
         else if(currentMember.at(i) == '+' && currentMember.at(i+1) == '+'){
             i++;
@@ -270,18 +286,29 @@ void SGDMCppParsing::processNextMember(){
         }
         else if(currentMember.at(i) == '=' && currentMember.at(i+1) == '='){
             i++;
-            signature += "equal_";
+            signature += "eq_";
         }
         else if(currentMember.at(i) == '!' && currentMember.at(i+1) == '='){
             i++;
-            signature += "notequal_";
+            signature += "neq_";
+        }
+        else if(currentMember.at(i) == '<' && currentMember.at(i+1) == '='){
+            i++;
+            signature += "leq_";
+        }
+        else if(currentMember.at(i) == '>' && currentMember.at(i+1) == '='){
+            i++;
+            signature += "geq_";
         }
         else if(currentMember.at(i) == '+'){signature += "plus_";}
         else if(currentMember.at(i) == '-'){signature += "minus_";}
+        else if(currentMember.at(i) == '='){signature += "assign_";}
+        else if(currentMember.at(i) == '<'){signature += "lt_";}
+        else if(currentMember.at(i) == '>'){signature += "gt_";}
         else if(currentMember.at(i) == '/'){signature += "div_";}
     }
     memberStruct.normalisedSignature = signature;
-    (*(*SGDMCppClass::allClasses).at(currentClass)).members.pushBack(memberStruct);
+    SGDMCppClass::allClasses.at(currentClass).members.insert(memberStruct.fullDeclaration, memberStruct);
     
     SGXTimer::singleCall(0.0f, &SGDMCppParsing::processNextMember);
 }

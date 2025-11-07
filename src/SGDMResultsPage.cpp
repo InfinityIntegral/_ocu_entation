@@ -11,6 +11,7 @@
 #include <SGLUnorderedMap.h>
 #include <SGLEqualsTo.h>
 #include <SGLHash.h>
+#include <SGWSequentialLongLabel.h>
 
 SGWBackground* SGDMResultsPage::pageBackground = nullptr;
 SGWLabel* SGDMResultsPage::currentInfo = nullptr;
@@ -40,24 +41,13 @@ void SGDMResultsPage::addWarning(const SGXString &x){
         SGDMResultsPage::hasWarning = true;
         (*SGDMResultsPage::warningLabel).setTextFromString("warnings:");
     }
-    new SGWTextLabel(SGDMResultsPage::warningList, x + "\n", 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, false);
+    new SGWSequentialLongLabel(SGDMResultsPage::warningList, SGXString('\n') + x, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void SGDMResultsPage::exitPage(){
     SGWBackground::disable(SGDMResultsPage::pageBackground);
-    SGDMResultsPage::terminate();
 }
 
 void SGDMResultsPage::showExitButton(){
     new SGWTextButton(SGDMResultsPage::pageBackground, "done", &SGDMResultsPage::exitPage, 0.5f, -1.5f, 1.0f, -1.5f, 0.0f, 3.0f, 0.0f, 1.0f);
-}
-
-void SGDMResultsPage::terminate(){
-    if(SGDMCppClass::allClasses != nullptr){
-        for(SGLUnorderedMap<SGXString, SGDMCppClass*, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::ConstIterator i=(*SGDMCppClass::allClasses).constBegin(); i != (*SGDMCppClass::allClasses).constEnd(); i++){
-            delete i.value();
-        }
-    }
-    delete SGDMCppClass::allClasses;
-    SGDMCppClass::allClasses = nullptr;
 }

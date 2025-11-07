@@ -13,6 +13,7 @@
 #include <SGDMDocumentationParsing.h>
 #include <SGDMResultsPage.h>
 #include <SGXFile.h>
+#include <SGDMCppParsing.h>
 
 SGWBackground* SGDMUserInterface::pageBackground = nullptr;
 SGWInput* SGDMUserInterface::sourceInput = nullptr;
@@ -75,13 +76,13 @@ bool SGDMUserInterface::checkFolderValidity(){
 void SGDMUserInterface::generateMD(){
     if(SGDMUserInterface::checkFolderValidity() == false){return;}
     SGDMDocumentationParsing::isWritingHTML = false;
-    SGDMDocumentationParsing::startParsingOperation();
+    SGDMCppParsing::startParsingOperation();
 }
 
 void SGDMUserInterface::generateHTML(){
     if(SGDMUserInterface::checkFolderValidity() == false){return;}
     SGDMDocumentationParsing::isWritingHTML = true;
-    SGDMDocumentationParsing::startParsingOperation();
+    SGDMCppParsing::startParsingOperation();
 }
 
 void SGDMUserInterface::getStoredPaths(){
