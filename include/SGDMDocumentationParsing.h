@@ -2,6 +2,10 @@
 #define SGDMDOCUMENTATIONPARSING_H
 
 #include <SGXString.h>
+#include <SGLUnorderedMap.h>
+#include <SGLEqualsTo.h>
+#include <SGLHash.h>
+#include <SGLUnorderedSet.h>
 
 template <typename T> class SGLVector;
 class SGXString;
@@ -18,8 +22,12 @@ public:
     static int currentDocFileNumber;
     static void verifyClass();
     static void verifyNextClass();
-    static SGLVector<const SGDMCppClass*>* verifyClassList;
+    static SGLVector<SGDMCppClass*>* verifyClassList;
     static int currentVerifyingClass;
+    static SGXString resolveSGDocDirectives(const SGXString& directive);
+    static SGLUnorderedMap<SGXString, SGXString, SGLEqualsTo<SGXString>, SGLHash<SGXString>> findReplaceDatabase;
+    static void addFindReplacePair(const SGXString& findReplaceDirective);
+    static SGLUnorderedSet<SGXString, SGLEqualsTo<SGXString>, SGLHash<SGXString>> autoLinkIgnore;
 };
 
 #endif // SGDMDOCUMENTATIONPARSING_H

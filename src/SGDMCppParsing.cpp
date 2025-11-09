@@ -14,6 +14,8 @@
 #include <SGLHash.h>
 #include <SGLArray.h>
 #include <SGDMCppMember.h>
+#include <SGLSet.h>
+#include <SGXDebug.h>
 
 int SGDMCppParsing::currentFileNumber = 0;
 SGLVector<SGXString>* SGDMCppParsing::filesList = nullptr;
@@ -193,6 +195,9 @@ void SGDMCppParsing::processNextClass(){
         if(isExcluded == true){continue;}
         if(members.at(index) == ""){continue;}
         if(members.at(index).length() > 3 && members.at(index).substringRight(3) == "{};"){members.at(index) = members.at(index).substringLeft(members.at(index).length() - 6) + ";";}
+        SGXString prefixClassName = className;
+        if(prefixClassName.contains("::")){prefixClassName = prefixClassName.substringLeft(prefixClassName.findFirstFromLeft("::"));}
+        members.at(index) = members.at(index).replace("Iterator", prefixClassName + "::Iterator").replace(SGXString("Const") + prefixClassName + "::Iterator", prefixClassName + "::ConstIterator").replace(SGXString("const") + prefixClassName + "::Iterator", "constIterator");
         (*SGDMCppParsing::membersList).pushBack(SGLPair<SGXString, SGXString>(className, members.at(index)));
     }
     
@@ -247,14 +252,26 @@ void SGDMCppParsing::processNextMember(){
                 s += currentMember.at(i);
                 continue;
             }
-            if(s != ""){identifiers.pushBack(s);}
+            if(s != "" && s.at(0).isEnglishLetter() == true){identifiers.pushBack(s);}
             s = "";
         }
     }
+    bool nameFound = false;
+    memberStruct.parameters = SGLSet<SGXString, CompareStringsByLength>();
+    if(currentMember.length() > currentClass.length() + 1 && currentMember.substringLeft(currentClass.length() + 1) == currentClass + "("){
+        nameFound = true;
+        memberStruct.functionName = currentClass;
+    }
     for(int i=0; i<identifiers.length(); i++){
         if(isCppKeyword(identifiers.at(i)) == false){
-            memberStruct.functionName = identifiers.at(i);
-            break;
+            if(nameFound == false){
+                nameFound = true;
+                memberStruct.functionName = identifiers.at(i);
+            }
+            else{
+                if(memberStruct.parameters.contains(identifiers.at(i))){SGDMResultsPage::addWarning(SGXString("presence of duplicate parameter ") + identifiers.at(i) + " in member " + memberStruct.fullDeclaration + " of class " + currentClass);}
+                else{memberStruct.parameters.insert(identifiers.at(i));}
+            }
         }
     }
     if(currentMember.length() > currentClass.length() + 1 && currentMember.substringLeft(currentClass.length() + 1) == currentClass + "("){memberStruct.functionName = currentClass;}
@@ -331,6 +348,7 @@ bool SGDMCppParsing::isCppKeyword(const SGXString &s){
     if(s == "signed"){return true;}
     if(s == "static"){return true;}
     if(s == "struct"){return true;}
+    if(s == "typename"){return true;}
     if(s == "unsigned"){return true;}
     if(s == "virtual"){return true;}
     if(s == "void"){return true;}

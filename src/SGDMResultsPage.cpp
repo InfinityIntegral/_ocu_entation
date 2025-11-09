@@ -7,16 +7,11 @@
 #include <SGWHorizontalAlignment.h>
 #include <SGWSequentialScrollView.h>
 #include <SGWTextButton.h>
-#include <SGDMCppClass.h>
-#include <SGLUnorderedMap.h>
-#include <SGLEqualsTo.h>
-#include <SGLHash.h>
 #include <SGWSequentialLongLabel.h>
 
 SGWBackground* SGDMResultsPage::pageBackground = nullptr;
 SGWLabel* SGDMResultsPage::currentInfo = nullptr;
 SGWLabel* SGDMResultsPage::warningLabel = nullptr;
-bool SGDMResultsPage::hasWarning = false;
 SGWWidget* SGDMResultsPage::warningList = nullptr;
 
 void SGDMResultsPage::showPage(){
@@ -26,7 +21,6 @@ void SGDMResultsPage::showPage(){
 SGWBackground* SGDMResultsPage::initialisePage(){
     SGWBackground* bg = new SGWPageBackground(SGWWidget::parentWidget, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 8);
     SGDMResultsPage::currentInfo = new SGWTextLabel(bg, "starting processing...", 0.0f, 0.5f, 0.0f, 0.5f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, false);
-    SGDMResultsPage::hasWarning = false;
     SGDMResultsPage::warningLabel = new SGWTextLabel(bg, "warnings: (none)", 0.0f, 0.5f, 0.0f, 2.0f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, false);
     SGDMResultsPage::warningList = new SGWSequentialScrollView(bg, 0.0f, 0.5f, 0.0f, 3.0f, 1.0f, -1.0f, 1.0f, -5.0f, 0.0f, 0.5f, 8);
     return bg;
@@ -37,11 +31,8 @@ void SGDMResultsPage::updateInfo(const SGXString &x){
 }
 
 void SGDMResultsPage::addWarning(const SGXString &x){
-    if(SGDMResultsPage::hasWarning == false){
-        SGDMResultsPage::hasWarning = true;
-        (*SGDMResultsPage::warningLabel).setTextFromString("warnings:");
-    }
     new SGWSequentialLongLabel(SGDMResultsPage::warningList, SGXString('\n') + x, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+    (*SGDMResultsPage::warningLabel).setTextFromString(SGXString("warnings: (") + SGXString::intToString((*SGDMResultsPage::warningList).getChildren().length()) + ")");
 }
 
 void SGDMResultsPage::exitPage(){

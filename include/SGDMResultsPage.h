@@ -12,7 +12,6 @@ public:
     static SGWBackground* initialisePage();
     static SGWLabel* currentInfo;
     static SGWLabel* warningLabel;
-    static bool hasWarning;
     static SGWWidget* warningList;
     static void updateInfo(const SGXString& x);
     static void addWarning(const SGXString& x);

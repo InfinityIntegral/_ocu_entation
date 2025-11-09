@@ -3,6 +3,12 @@
 
 #include <SGXString.h>
 #include <SGLVector.h>
+#include <SGLSet.h>
+
+class CompareStringsByLength {
+public:
+    bool operator()(const SGXString& a, const SGXString& b) const;
+};
 
 class SGDMCppMember {
 public:
@@ -14,6 +20,7 @@ public:
     SGXString functionName;
     SGXString normalisedSignature;
     SGXString fullDeclaration;
+    SGLSet<SGXString, CompareStringsByLength> parameters;
     SGLVector<SGXString> description;
     SGLVector<SGXString> notes;
     SGLVector<SGXString> warnings;
