@@ -15,6 +15,7 @@
 #include <SGLSet.h>
 #include <SGDMCppMember.h>
 #include <SGLUnorderedSet.h>
+#include <SGDMSgmlGeneration.h>
 
 bool SGDMDocumentationParsing::isWritingHTML = false;
 SGXString SGDMDocumentationParsing::sourcePath = "";
@@ -63,7 +64,13 @@ void SGDMDocumentationParsing::parseDocFile(const SGXString& fileContents){
         const SGXString& currentDirective = list.at(i);
         currentDirective.cleanWhitespace();
         if(currentDirective == "" || currentDirective == " "){continue;}
-        if(currentDirective.length() > 15 && currentDirective.substringLeft(15) == "@SG_NOAUTOLINK "){
+        if(currentDirective.length() > 16 && currentDirective.substringLeft(16) == "@SG_PROJECTNAME "){
+            SGDMSgmlGeneration::projectName = currentDirective.substringRight(currentDirective.length() - 16);
+        }
+        else if(currentDirective.length() > 17 && currentDirective.substringLeft(17) == "@SG_GITHUBPREFIX "){
+            SGDMSgmlGeneration::githubPrefixLink = currentDirective.substringRight(currentDirective.length() - 17);
+        }
+        else if(currentDirective.length() > 15 && currentDirective.substringLeft(15) == "@SG_NOAUTOLINK "){
             SGDMDocumentationParsing::autoLinkIgnore.insert(currentDirective.substringRight(currentDirective.length() - 15));
         }
         else if(currentDirective.length() > 18 && currentDirective.substringLeft(18) == "@SG_FINDREPSOURCE "){
@@ -132,7 +139,7 @@ void SGDMDocumentationParsing::verifyNextClass(){
         delete SGDMDocumentationParsing::verifyClassList;
         SGDMDocumentationParsing::verifyClassList = nullptr;
         SGDMDocumentationParsing::currentVerifyingClass = 0;
-        SGDMResultsPage::showExitButton();
+        SGXTimer::singleCall(0.0f, &SGDMSgmlGeneration::generateSgml);
         return;
     }
     SGDMCppClass& currentClass = (*(*SGDMDocumentationParsing::verifyClassList).at(SGDMDocumentationParsing::currentVerifyingClass));
@@ -145,6 +152,7 @@ void SGDMDocumentationParsing::verifyNextClass(){
     for(SGLUnorderedMap<SGXString, SGDMCppMember, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::Iterator i = currentClass.members.begin(); i != currentClass.members.end(); i++){
         SGDMCppMember& currentMember = i.value();
         if(currentMember.isPrivateAPI == true){continue;}
+        if(currentMember.fullDeclaration.at(currentMember.fullDeclaration.length() - 1) != ';'){SGDMResultsPage::addWarning(SGXString("improperly terminated declaration ") + currentMember.fullDeclaration + " in " + currentClass.className);}
         if(currentMember.description.length() == 0){SGDMResultsPage::addWarning(currentMember.fullDeclaration + " in " + currentClass.className + " missing description");}
         SGLVector<SGXString*> memberInfo;
         for(int j=0; j<currentMember.description.length(); j++){
@@ -159,14 +167,14 @@ void SGDMDocumentationParsing::verifyNextClass(){
         for(SGLSet<SGXString, CompareStringsByLength>::ConstIterator j = currentMember.parameters.constBegin(); j != currentMember.parameters.constEnd(); j++){
             bool parameterFound = false;
             const SGXString searchString = SGXString("$") + (*j);
-            const SGXString replaceString = SGXString("@SG_MD_B") + SGXString::intToStringBase16((*j).length()).fillLeftToLength(2, '0') + (*j);
+            const SGXString replaceString = SGXString("@SG_ML_B") + SGXString::intToStringBase16((*j).length()).fillLeftToLength(2, '0') + (*j);
             for(int k=0; k<currentMember.description.length(); k++){
                 if(currentMember.description.at(k).contains(searchString) == true){parameterFound = true;}
             }
             if(parameterFound == false){SGDMResultsPage::addWarning(SGXString("parameter ") + (*j) + " not found in docs of member " + currentMember.fullDeclaration + " of class " + currentClass.className);}
             for(int k=0; k<memberInfo.length(); k++){
                 while((*memberInfo.at(k)).contains(searchString)){
-                    (*memberInfo.at(k)) = (*memberInfo.at(k)).replace(searchString, replaceString);
+                    (*memberInfo.at(k)).replace(searchString, replaceString);
                 }
             }
         }
@@ -224,7 +232,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - index);
             continue;
         }
-        resolvedDirective += "@SG_MD_L131Fundefined behaviour../tutorials/undefinedbehaviour";
+        resolvedDirective += "@SG_ML_L131Fundefined behaviour../tutorials/undefinedbehaviour";
         unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - 19);
     }
     unresolvedDirective = resolvedDirective;
@@ -241,7 +249,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - index);
             continue;
         }
-        if(unresolvedDirective.length() > 6 && unresolvedDirective.substringLeft(6) == "SG_MD_"){
+        if(unresolvedDirective.length() > 6 && unresolvedDirective.substringLeft(6) == "SG_ML_"){
             resolvedDirective += unresolvedDirective.substringLeft(6);
             unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - 6);
             continue;
@@ -260,7 +268,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             continue;
         }
         if(SGDMCppClass::allClasses.contains(autoLinkTarget) == true){
-            resolvedDirective += (SGXString("@SG_MD_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + autoLinkTarget + autoLinkTarget.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')));
+            resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + autoLinkTarget + autoLinkTarget.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')));
             continue;
         }
         if(autoLinkTarget.contains("::")){
@@ -275,7 +283,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             for(SGLUnorderedMap<SGXString, SGDMCppMember, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::ConstIterator i = SGDMCppClass::allClasses.at(className).members.constBegin(); i != SGDMCppClass::allClasses.at(className).members.constEnd(); i++){
                 if(i.value().functionName == functionName){
                     const SGXString link = className.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')) + "#" + i.value().normalisedSignature;
-                    resolvedDirective += (SGXString("@SG_MD_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + SGXString::intToStringBase16(link.length()).fillLeftToLength(2, SGXChar('0')) + autoLinkTarget + link);
+                    resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + SGXString::intToStringBase16(link.length()).fillLeftToLength(2, SGXChar('0')) + autoLinkTarget + link);
                     memberFound = true;
                 }
             }

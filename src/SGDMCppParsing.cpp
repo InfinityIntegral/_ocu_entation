@@ -128,7 +128,7 @@ void SGDMCppParsing::processNextClass(){
     
     SGDMCppClass classStruct;
     classStruct.headerPath = currentClassFileName.substringRight(currentClassFileName.length() - SGDMDocumentationParsing::sourcePath.length());
-    classStruct.sourcePath = classStruct.headerPath.replace("include", "src").replace(".h", ".cpp");
+    classStruct.sourcePath = SGXString(classStruct.headerPath).replace("include", "src").replace(".h", ".cpp");
     if(SGXFileSystem::fileExists(SGDMDocumentationParsing::sourcePath + classStruct.sourcePath) == false){classStruct.sourcePath = "";}
     classStruct.moduleName = SGXFileSystem::getParentName(SGXFileSystem::getParentPath(currentClassFileName));
     const SGXString preimplementation = currentClass.substringLeft(currentClass.findFirstFromLeft(SGXChar('{')));
@@ -197,7 +197,7 @@ void SGDMCppParsing::processNextClass(){
         if(members.at(index).length() > 3 && members.at(index).substringRight(3) == "{};"){members.at(index) = members.at(index).substringLeft(members.at(index).length() - 6) + ";";}
         SGXString prefixClassName = className;
         if(prefixClassName.contains("::")){prefixClassName = prefixClassName.substringLeft(prefixClassName.findFirstFromLeft("::"));}
-        members.at(index) = members.at(index).replace("Iterator", prefixClassName + "::Iterator").replace(SGXString("Const") + prefixClassName + "::Iterator", prefixClassName + "::ConstIterator").replace(SGXString("const") + prefixClassName + "::Iterator", "constIterator");
+        members.at(index).replace("Iterator", prefixClassName + "::Iterator").replace(SGXString("Const") + prefixClassName + "::Iterator", prefixClassName + "::ConstIterator").replace(SGXString("const") + prefixClassName + "::Iterator", "constIterator");
         (*SGDMCppParsing::membersList).pushBack(SGLPair<SGXString, SGXString>(className, members.at(index)));
     }
     
@@ -247,10 +247,22 @@ void SGDMCppParsing::processNextMember(){
     for(int i=0; i<currentMember.length(); i++){
         if(currentMember.at(i).isEnglishAlphanumeric() == true){s += currentMember.at(i);}
         else{
-            if(s.length() >= 8 && s.substringLeft(8) == "operator" && (
-                (currentMember.at(i) != '(' && currentMember.at(i) != ')' && currentMember.at(i) != ' ') || ((s.contains("()") == false && currentMember.at(i) == '(' && currentMember.at(i + 1) == ')') || (s.contains("()") == false && currentMember.at(i - 1) == '(' && currentMember.at(i) == ')')))){
-                s += currentMember.at(i);
-                continue;
+            if(s == "operator"){
+                if(currentMember.at(i) == '*'){s += "*";}
+                else if(currentMember.at(i) == '&'){s += "&";}
+                else if(currentMember.at(i) == '(' && currentMember.at(i+1) == ')'){s += "()";}
+                else if(currentMember.at(i) == '+' && currentMember.at(i+1) == '+'){s += "++";}
+                else if(currentMember.at(i) == '-' && currentMember.at(i+1) == '-'){s += "--";}
+                else if(currentMember.at(i) == '=' && currentMember.at(i+1) == '='){s += "==";}
+                else if(currentMember.at(i) == '!' && currentMember.at(i+1) == '='){s += "!=";}
+                else if(currentMember.at(i) == '<' && currentMember.at(i+1) == '='){s += "<=";}
+                else if(currentMember.at(i) == '>' && currentMember.at(i+1) == '='){s += ">=";}
+                else if(currentMember.at(i) == '+'){s += "+";}
+                else if(currentMember.at(i) == '-'){s += "-";}
+                else if(currentMember.at(i) == '='){s += "=";}
+                else if(currentMember.at(i) == '<'){s += "<";}
+                else if(currentMember.at(i) == '>'){s += ">";}
+                else if(currentMember.at(i) == '/'){s += "/";}
             }
             if(s != "" && s.at(0).isEnglishLetter() == true){identifiers.pushBack(s);}
             s = "";
@@ -285,38 +297,14 @@ void SGDMCppParsing::processNextMember(){
         }
         if(currentMember.at(i) == '*'){signature += "ptr_";}
         else if(currentMember.at(i) == '&'){signature += "ref_";}
-        else if(currentMember.at(i) == '(' && currentMember.at(i+1) == ')'){
-            i++;
-            signature += "func_";
-        }
-        else if(currentMember.at(i) == ':' && currentMember.at(i+1) == ':'){
-            i++;
-            signature += "mc_";
-        }
-        else if(currentMember.at(i) == '+' && currentMember.at(i+1) == '+'){
-            i++;
-            signature += "increment_";
-        }
-        else if(currentMember.at(i) == '-' && currentMember.at(i+1) == '-'){
-            i++;
-            signature += "decrement_";
-        }
-        else if(currentMember.at(i) == '=' && currentMember.at(i+1) == '='){
-            i++;
-            signature += "eq_";
-        }
-        else if(currentMember.at(i) == '!' && currentMember.at(i+1) == '='){
-            i++;
-            signature += "neq_";
-        }
-        else if(currentMember.at(i) == '<' && currentMember.at(i+1) == '='){
-            i++;
-            signature += "leq_";
-        }
-        else if(currentMember.at(i) == '>' && currentMember.at(i+1) == '='){
-            i++;
-            signature += "geq_";
-        }
+        else if(currentMember.at(i) == '(' && currentMember.at(i+1) == ')'){i++; signature += "func_";}
+        else if(currentMember.at(i) == ':' && currentMember.at(i+1) == ':'){i++; signature += "mc_";}
+        else if(currentMember.at(i) == '+' && currentMember.at(i+1) == '+'){i++; signature += "increment_";}
+        else if(currentMember.at(i) == '-' && currentMember.at(i+1) == '-'){i++; signature += "decrement_";}
+        else if(currentMember.at(i) == '=' && currentMember.at(i+1) == '='){i++; signature += "eq_";}
+        else if(currentMember.at(i) == '!' && currentMember.at(i+1) == '='){i++; signature += "neq_";}
+        else if(currentMember.at(i) == '<' && currentMember.at(i+1) == '='){i++; signature += "leq_";}
+        else if(currentMember.at(i) == '>' && currentMember.at(i+1) == '='){i++; signature += "geq_";}
         else if(currentMember.at(i) == '+'){signature += "plus_";}
         else if(currentMember.at(i) == '-'){signature += "minus_";}
         else if(currentMember.at(i) == '='){signature += "assign_";}
