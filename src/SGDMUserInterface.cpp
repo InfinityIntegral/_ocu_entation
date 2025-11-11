@@ -29,8 +29,7 @@ void SGDMUserInterface::initialise(){
     new SGWTextLabel(SGDMUserInterface::pageBackground, "output folder path:", 0.0f, 0.5f, 0.0f, 3.5f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, false);
     SGDMUserInterface::destinationInput = new SGWTextInput(SGDMUserInterface::pageBackground, &SGDMUserInterface::checkDestinationPath, 0.0f, 0.5f, 0.0f, 4.5f, 1.0f, -1.0f, 0.0f, 1.0f);
     SGDMUserInterface::destinationWarning = new SGWTextLabel(SGDMUserInterface::pageBackground, "this folder must be empty or nonexistent", 0.0f, 0.5f, 0.0f, 5.5f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, true);
-    new SGWTextButton(SGDMUserInterface::pageBackground, "generate Markdown", &SGDMUserInterface::generateMD, 0.5f, -4.0f, 0.0f, 7.0f, 0.0f, 8.0f, 0.0f, 1.0f);
-    new SGWTextButton(SGDMUserInterface::pageBackground, "generate HTML", &SGDMUserInterface::generateHTML, 0.5f, -4.0f, 0.0f, 8.5f, 0.0f, 8.0f, 0.0f, 1.0f);
+    new SGWTextButton(SGDMUserInterface::pageBackground, "generate HTML", &SGDMUserInterface::generateHTML, 0.5f, -4.0f, 0.0f, 7.0f, 0.0f, 8.0f, 0.0f, 1.0f);
     SGDMUserInterface::getStoredPaths();
 }
 
@@ -73,15 +72,8 @@ bool SGDMUserInterface::checkFolderValidity(){
     return true;
 }
 
-void SGDMUserInterface::generateMD(){
-    if(SGDMUserInterface::checkFolderValidity() == false){return;}
-    SGDMDocumentationParsing::isWritingHTML = false;
-    SGDMCppParsing::startParsingOperation();
-}
-
 void SGDMUserInterface::generateHTML(){
     if(SGDMUserInterface::checkFolderValidity() == false){return;}
-    SGDMDocumentationParsing::isWritingHTML = true;
     SGDMCppParsing::startParsingOperation();
 }
 

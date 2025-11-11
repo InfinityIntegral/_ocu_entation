@@ -15,7 +15,6 @@ public:
     static SGWLabel* destinationWarning;
     static void checkSourcePath();
     static void checkDestinationPath();
-    static void generateMD();
     static void generateHTML();
     static bool checkFolderValidity();
     static void getStoredPaths();

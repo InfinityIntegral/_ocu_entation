@@ -12,7 +12,6 @@ class SGXString;
 class SGDMCppClass;
 class SGDMDocumentationParsing {
 public:
-    static bool isWritingHTML; // true - HTML, false - MD
     static SGXString sourcePath;
     static SGXString destinationPath;
     static void findDocFiles();

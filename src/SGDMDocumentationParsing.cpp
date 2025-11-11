@@ -17,7 +17,6 @@
 #include <SGLUnorderedSet.h>
 #include <SGDMSgmlGeneration.h>
 
-bool SGDMDocumentationParsing::isWritingHTML = false;
 SGXString SGDMDocumentationParsing::sourcePath = "";
 SGXString SGDMDocumentationParsing::destinationPath = "";
 SGLVector<SGXString>* SGDMDocumentationParsing::docFilesList = nullptr;
