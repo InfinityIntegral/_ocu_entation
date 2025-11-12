@@ -69,6 +69,7 @@ bool SGDMUserInterface::checkFolderValidity(){
     SGDMDocumentationParsing::sourcePath = (*SGDMUserInterface::sourceInput).getTextAsString();
     SGDMDocumentationParsing::destinationPath = (*SGDMUserInterface::destinationInput).getTextAsString();
     if(SGDMDocumentationParsing::sourcePath.at(SGDMDocumentationParsing::sourcePath.length() - 1) != '/'){SGDMDocumentationParsing::sourcePath += "/";}
+    if(SGDMDocumentationParsing::destinationPath.at(SGDMDocumentationParsing::destinationPath.length() - 1) == '/'){SGDMDocumentationParsing::destinationPath = SGDMDocumentationParsing::destinationPath.substringLeft(SGDMDocumentationParsing::destinationPath.length() - 1);}
     return true;
 }
 

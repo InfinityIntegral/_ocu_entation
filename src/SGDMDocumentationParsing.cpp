@@ -8,7 +8,6 @@
 #include <SGXTimer.h>
 #include <SGXFile.h>
 #include <SGDMCppClass.h>
-#include <SGXDebug.h>
 #include <SGLUnorderedMap.h>
 #include <SGLEqualsTo.h>
 #include <SGLHash.h>
@@ -16,6 +15,7 @@
 #include <SGDMCppMember.h>
 #include <SGLUnorderedSet.h>
 #include <SGDMSgmlGeneration.h>
+#include <SGXChar.h>
 
 SGXString SGDMDocumentationParsing::sourcePath = "";
 SGXString SGDMDocumentationParsing::destinationPath = "";
@@ -166,7 +166,7 @@ void SGDMDocumentationParsing::verifyNextClass(){
         for(SGLSet<SGXString, CompareStringsByLength>::ConstIterator j = currentMember.parameters.constBegin(); j != currentMember.parameters.constEnd(); j++){
             bool parameterFound = false;
             const SGXString searchString = SGXString("$") + (*j);
-            const SGXString replaceString = SGXString("@SG_ML_B") + SGXString::intToStringBase16((*j).length()).fillLeftToLength(2, '0') + (*j);
+            const SGXString replaceString = SGXString("@SG_ML_B") + SGXString::intToStringBase16((*j).length()).fillLeftToLength(3, '0') + (*j);
             for(int k=0; k<currentMember.description.length(); k++){
                 if(currentMember.description.at(k).contains(searchString) == true){parameterFound = true;}
             }
@@ -231,7 +231,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - index);
             continue;
         }
-        resolvedDirective += "@SG_ML_L131Fundefined behaviour../tutorials/undefinedbehaviour";
+        resolvedDirective += "@SG_ML_L01301Fundefined behaviour../tutorials/undefinedbehaviour";
         unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - 19);
     }
     unresolvedDirective = resolvedDirective;
@@ -267,7 +267,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             continue;
         }
         if(SGDMCppClass::allClasses.contains(autoLinkTarget) == true){
-            resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + autoLinkTarget + autoLinkTarget.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')));
+            resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(3, SGXChar('0')) + SGXString::intToStringBase16(endIndex).fillLeftToLength(3, SGXChar('0')) + autoLinkTarget + autoLinkTarget.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')));
             continue;
         }
         if(autoLinkTarget.contains("::")){
@@ -282,7 +282,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             for(SGLUnorderedMap<SGXString, SGDMCppMember, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::ConstIterator i = SGDMCppClass::allClasses.at(className).members.constBegin(); i != SGDMCppClass::allClasses.at(className).members.constEnd(); i++){
                 if(i.value().functionName == functionName){
                     const SGXString link = className.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')) + "#" + i.value().normalisedSignature;
-                    resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(2, SGXChar('0')) + SGXString::intToStringBase16(link.length()).fillLeftToLength(2, SGXChar('0')) + autoLinkTarget + link);
+                    resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(3, SGXChar('0')) + SGXString::intToStringBase16(link.length()).fillLeftToLength(3, SGXChar('0')) + autoLinkTarget + link);
                     memberFound = true;
                 }
             }

@@ -46,6 +46,7 @@ target_sources(_ocu_entation_app
     PRIVATE "src/SGDMCppParsing.cpp"
     PRIVATE "src/SGDMCppClass.cpp"
     PRIVATE "src/SGDMSgmlGeneration.cpp"
+    PRIVATE "src/SGDMHtmlGeneration.cpp"
 )
 find_package(SGEXTN REQUIRED COMPONENTS SG_Containers SG_Core SG_FileSystem SG_Widgets EntryPoint_SG)
 target_link_libraries(_ocu_entation_app
