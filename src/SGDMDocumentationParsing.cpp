@@ -59,6 +59,19 @@ void SGDMDocumentationParsing::parseDocFile(const SGXString& fileContents){
     SGLArray<SGXString> list = fileContents.splitCustomSeparator(SGXChar('\n'));
     SGXString currentClass = "";
     SGXString currentMember = "";
+    if(list.length() > 0 && list.at(0).substringLeft(11) == "@SG_MODULE "){
+        SGDMCppClass module;
+        SGDMCppMember fakeMember;
+        module.className = list.at(0);
+        for(int i=1; i<list.length(); i++){
+            list.at(i).cleanWhitespace();
+            if(list.at(i) == ""){continue;}
+            fakeMember.description.pushBack(SGDMDocumentationParsing::resolveSGDocDirectives(list.at(i)));
+        }
+        module.members.insert("", fakeMember);
+        SGDMCppClass::allClasses.insert(module.className, module);
+        return;
+    }
     for(int i=0; i<list.length(); i++){
         const SGXString& currentDirective = list.at(i);
         currentDirective.cleanWhitespace();
@@ -145,6 +158,11 @@ void SGDMDocumentationParsing::verifyNextClass(){
     SGDMDocumentationParsing::currentVerifyingClass++;
     SGDMResultsPage::updateInfo(SGXString("verifying ") + SGXString::intToString(SGDMDocumentationParsing::currentVerifyingClass) + " of " + SGXString::intToString((*SGDMDocumentationParsing::verifyClassList).length()) + " C++ classes");
     
+    if(currentClass.className.length() > 11 && currentClass.className.substringLeft(11) == "@SG_MODULE "){
+        SGXTimer::singleCall(0.0f, &SGDMDocumentationParsing::verifyNextClass);
+        return;
+    }
+    
     if(currentClass.briefDescription == ""){SGDMResultsPage::addWarning(currentClass.className + " missing brief description");}
     if(currentClass.detailedDescription == ""){SGDMResultsPage::addWarning(currentClass.className + " missing detailed description");}
     if(currentClass.implementationDetails == ""){SGDMResultsPage::addWarning(currentClass.className + " missing implementation info");}
@@ -208,7 +226,9 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
         }
         SGXString extractedDirective = unresolvedDirective.substringLeft(directiveEnd);
         unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - directiveEnd);
-        if(extractedDirective.length() <= 12 || extractedDirective.substringLeft(12) != "@SG_FINDREP_"){SGDMResultsPage::addWarning(SGXString("cannot resolve SGDoc directive ") + extractedDirective + " because it is not find replace");}
+        if(extractedDirective.length() <= 12 || extractedDirective.substringLeft(12) != "@SG_FINDREP_"){
+            if(extractedDirective.length() <= 7 || extractedDirective.substringLeft(7) != "@SG_ML_"){SGDMResultsPage::addWarning(SGXString("cannot resolve SGDoc directive ") + extractedDirective + " because it is not find replace");}
+        }
         else{
             extractedDirective = extractedDirective.substringRight(extractedDirective.length() - 12);
             if(SGDMDocumentationParsing::findReplaceDatabase.contains(extractedDirective) == false){SGDMResultsPage::addWarning(SGXString("nonexistent find replace directive ") + extractedDirective);}
@@ -267,7 +287,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             continue;
         }
         if(SGDMCppClass::allClasses.contains(autoLinkTarget) == true){
-            resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(3, SGXChar('0')) + SGXString::intToStringBase16(endIndex).fillLeftToLength(3, SGXChar('0')) + autoLinkTarget + autoLinkTarget.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')));
+            resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(3, SGXChar('0')) + SGXString::intToStringBase16(endIndex + 12).fillLeftToLength(3, SGXChar('0')) + autoLinkTarget + "../cppclass/" + autoLinkTarget.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')));
             continue;
         }
         if(autoLinkTarget.contains("::")){
@@ -281,7 +301,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
             bool memberFound = false;
             for(SGLUnorderedMap<SGXString, SGDMCppMember, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::ConstIterator i = SGDMCppClass::allClasses.at(className).members.constBegin(); i != SGDMCppClass::allClasses.at(className).members.constEnd(); i++){
                 if(i.value().functionName == functionName){
-                    const SGXString link = className.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')) + "#" + i.value().normalisedSignature;
+                    const SGXString link = SGXString("../cppclass/") + className.getLowerLanguageAware().replace(SGXChar(':'), SGXChar('_')) + "#" + i.value().normalisedSignature;
                     resolvedDirective += (SGXString("@SG_ML_L") + SGXString::intToStringBase16(endIndex).fillLeftToLength(3, SGXChar('0')) + SGXString::intToStringBase16(link.length()).fillLeftToLength(3, SGXChar('0')) + autoLinkTarget + link);
                     memberFound = true;
                 }
