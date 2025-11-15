@@ -59,7 +59,31 @@ void SGDMDocumentationParsing::parseDocFile(const SGXString& fileContents){
     SGLArray<SGXString> list = fileContents.splitCustomSeparator(SGXChar('\n'));
     SGXString currentClass = "";
     SGXString currentMember = "";
-    if(list.length() > 0 && list.at(0).substringLeft(11) == "@SG_MODULE "){
+    if(list.length() > 0 && list.at(0).length() > 14 && list.at(0).substringLeft(14) == "@SG_OTHERFILE_"){
+        SGDMCppClass fakeClass;
+        SGDMCppMember fakeMember;
+        fakeClass.className = list.at(0);
+        bool isInCodeBlock = false;
+        SGXString codeBlock = "";
+        for(int i=1; i<list.length(); i++){
+            if(list.at(i) == "@SG_STARTCODEBLK"){isInCodeBlock = true;}
+            else if(list.at(i) == "@SG_ENDCODEBLK"){
+                isInCodeBlock = false;
+                fakeMember.description.pushBack(SGXString("@SG_ML_WARN ") + codeBlock.replace("<", "&lt;").replace(">", "&gt;"));
+                codeBlock = "";
+            }
+            else if(isInCodeBlock == true){
+                if(codeBlock == ""){codeBlock = list.at(i);}
+                else{codeBlock += SGXString("&#10;") + list.at(i);}
+            }
+            else if(list.at(i) == "@SG_ML_BLANKLINE" || (list.at(i).length() > 14 && list.at(i).substringLeft(14) == "@SG_ML_HEADER_")){fakeMember.description.pushBack(SGDMDocumentationParsing::resolveSGDocDirectives(list.at(i)));}
+            else{fakeMember.description.pushBack(SGXString("&#9;") + SGDMDocumentationParsing::resolveSGDocDirectives(list.at(i)));}
+        }
+        fakeClass.members.insert("", fakeMember);
+        SGDMCppClass::allClasses.insert(fakeClass.className, fakeClass);
+        return;
+    }
+    if(list.length() > 0 && list.at(0).length() > 11 && list.at(0).substringLeft(11) == "@SG_MODULE "){
         SGDMCppClass module;
         SGDMCppMember fakeMember;
         module.className = list.at(0);
@@ -162,6 +186,10 @@ void SGDMDocumentationParsing::verifyNextClass(){
         SGXTimer::singleCall(0.0f, &SGDMDocumentationParsing::verifyNextClass);
         return;
     }
+    if(currentClass.className.length() > 14 && currentClass.className.substringLeft(14) == "@SG_OTHERFILE_"){
+        SGXTimer::singleCall(0.0f, &SGDMDocumentationParsing::verifyNextClass);
+        return;
+    }
     
     if(currentClass.briefDescription == ""){SGDMResultsPage::addWarning(currentClass.className + " missing brief description");}
     if(currentClass.detailedDescription == ""){SGDMResultsPage::addWarning(currentClass.className + " missing detailed description");}
@@ -228,10 +256,14 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
         unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - directiveEnd);
         if(extractedDirective.length() <= 12 || extractedDirective.substringLeft(12) != "@SG_FINDREP_"){
             if(extractedDirective.length() <= 7 || extractedDirective.substringLeft(7) != "@SG_ML_"){SGDMResultsPage::addWarning(SGXString("cannot resolve SGDoc directive ") + extractedDirective + " because it is not find replace");}
+            resolvedDirective += extractedDirective;
         }
         else{
             extractedDirective = extractedDirective.substringRight(extractedDirective.length() - 12);
-            if(SGDMDocumentationParsing::findReplaceDatabase.contains(extractedDirective) == false){SGDMResultsPage::addWarning(SGXString("nonexistent find replace directive ") + extractedDirective);}
+            if(SGDMDocumentationParsing::findReplaceDatabase.contains(extractedDirective) == false){
+                SGDMResultsPage::addWarning(SGXString("nonexistent find replace directive ") + extractedDirective);
+                resolvedDirective += extractedDirective;
+            }
             else{
                 resolvedDirective += SGDMDocumentationParsing::findReplaceDatabase.at(extractedDirective);
             }

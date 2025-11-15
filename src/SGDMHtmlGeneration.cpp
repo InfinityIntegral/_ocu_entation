@@ -285,9 +285,19 @@ window.addEventListener("hashchange", highlightSection);
 </script>
 </head>
 <body style="margin-left: 1em;">
+<p class="description" style="color: rgb(238, 37, 54); text-align: center; font-size: 2.5rem">sincerely <img src="flag.png" style="vertical-align: middle; height: 2.5rem; image-rendering: auto;"> Singaporean</p>
+<div style="width: 100%; height: 0.25rem; background-color: var(--c8);"></div>
+<div><button class="button" style="width: 100%;" onclick="location.href='/'">Project 05524F.sg</button></div>
+<div style="width: 100%; height: 0.25rem; background-color: var(--c8);"></div>
 )RAW_STRING";
-    output += SGXString("<div><button class=\"button\" style=\"width: 100%;\" onclick=\"location.href='../readme/readme'\">") + SGDMSgmlGeneration::projectName + " Documentation</button></div>";
-    output += "<div style=\"width: 100%; height: 1.75rem; background-color: var(--c8);\"></div>";
+    if(SGDMSgmlGeneration::projectName != ""){
+        output += SGXString("<div><button class=\"button\" style=\"width: 100%;\" onclick=\"location.href='../readme/readme'\">") + SGDMSgmlGeneration::projectName + " Documentation</button></div>";
+        output += "<div style=\"width: 100%; height: 0.25rem; background-color: var(--c8);\"></div>";
+    }
+    if(SGDMSgmlGeneration::projectName == "SGEXTN"){
+        output += "<p class=\"warning\">If you have not done so, read this full <a class=\"link\" href=\"../tutorials/full\">tutorial</a> on how to use SGEXTN to build an application.</p>";
+        output += "<div style=\"width: 100%; height: 0.75rem; background-color: var(--c8);\"></div>";
+    }
     
     SGLArray<SGXString> directives = sgml.splitCustomSeparator(SGXChar('\n'));
     for(int i=0; i<directives.length(); i++){
@@ -309,9 +319,14 @@ window.addEventListener("hashchange", highlightSection);
     output += R"RAW_STRING(
 <div style="width: 100%; height: 1.75rem; background-color: var(--c8);"></div>
 <div style="width: 100%; height: 0.25rem; background-color: var(--c4);"></div>
+<div style="width: 100%; height: 0.25rem; background-color: var(--c8);"></div>
 <p class="description">©2025 05524F.sg (Singapore)</p>
-<p class="description"><a class="link" href="/contact">report a bug in SGEXTN or contact 05524F</a></p>
+<p class="description"><a class="link" href="/contact">contact 05524F / report a bug / make a suggestion</a></p>
+<p class="description"><a class="link" href="/values">about 05524F SINGAPORE values</a></p>
+<p class="description"><a class="link" href="/projects">list of 05524F projects</a></p>
+<div style="width: 100%; height: 0.25rem; background-color: var(--c8);"></div>
 <div style="width: 100%; height: 0.25rem; background-color: var(--c4);"></div>
+<div style="width: 100%; height: 0.25rem; background-color: var(--c8);"></div>
 </body>
 </html>
 )RAW_STRING";
