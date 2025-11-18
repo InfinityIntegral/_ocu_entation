@@ -272,6 +272,18 @@ SGXString SGDMHtmlGeneration::convertSgmlToHtml(const SGXString &sgml, const SGX
 }
 </style>
 <script>
+let m = (new Date()).getMonth() + 1;
+if(m >= 7 && m <= 9){
+    document.documentElement.style.setProperty("--c0", "rgb(0, 0, 0)");
+    document.documentElement.style.setProperty("--c1", "rgb(60, 9, 14)");
+    document.documentElement.style.setProperty("--c2", "rgb(119, 19, 27)");
+    document.documentElement.style.setProperty("--c3", "rgb(179, 28, 41)");
+    document.documentElement.style.setProperty("--c4", "rgb(238, 37, 54)");
+    document.documentElement.style.setProperty("--c5", "rgb(242, 92, 104)");
+    document.documentElement.style.setProperty("--c6", "rgb(247, 146, 155)");
+    document.documentElement.style.setProperty("--c7", "rgb(251, 201, 205)");
+    document.documentElement.style.setProperty("--c8", "rgb(255, 255, 255)");
+}
 function highlightSection(){
     let tag = window.location.hash.substring(1);
     if(tag == ""){return;}
@@ -285,7 +297,7 @@ window.addEventListener("hashchange", highlightSection);
 </script>
 </head>
 <body style="margin-left: 1em;">
-<p class="description" style="color: rgb(238, 37, 54); text-align: center; font-size: 2.5rem">sincerely <img src="flag.png" style="vertical-align: middle; height: 2.5rem; image-rendering: auto;"> Singaporean</p>
+<p class="description" style="color: rgb(238, 37, 54); text-align: center; font-size: 2.5rem">sincerely <img src="/flag.png" style="vertical-align: middle; height: 2.5rem; image-rendering: auto;"> Singaporean</p>
 <div style="width: 100%; height: 0.25rem; background-color: var(--c8);"></div>
 <div><button class="button" style="width: 100%;" onclick="location.href='/'">Project 05524F.sg</button></div>
 <div style="width: 100%; height: 0.25rem; background-color: var(--c8);"></div>
