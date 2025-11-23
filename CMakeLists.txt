@@ -7,9 +7,12 @@ set(CMAKE_AUTORCC ON)
 if(APPLE)
     set(CMAKE_BUILD_RPATH "@loader_path")
 elseif(UNIX)
+    message("setting RPATH")
     set(CMAKE_BUILD_RPATH "$ORIGIN")
 endif()
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+set(CMAKE_SKIP_BUILD_RPATH OFF)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE OFF)
 set(CMAKE_OPTIMIZE_DEPENDENCIES ON)
@@ -47,6 +50,7 @@ target_sources(_ocu_entation_app
     PRIVATE "src/SGDMHtmlGeneration.cpp"
 )
 find_package(SGEXTN REQUIRED COMPONENTS SG_Containers SG_Core SG_FileSystem SG_Widgets EntryPoint_SG)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 GuiPrivate)
 target_link_libraries(_ocu_entation_app
     PRIVATE SGEXTN::SG_Containers
     PRIVATE SGEXTN::SG_Core
