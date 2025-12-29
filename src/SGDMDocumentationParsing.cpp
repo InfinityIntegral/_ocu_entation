@@ -314,7 +314,7 @@ SGXString SGDMDocumentationParsing::resolveSGDocDirectives(const SGXString &dire
         }
         const SGXString autoLinkTarget = unresolvedDirective.substringLeft(endIndex);
         unresolvedDirective = unresolvedDirective.substringRight(unresolvedDirective.length() - endIndex);
-        if(SGDMDocumentationParsing::autoLinkIgnore.contains(autoLinkTarget) == true){
+        if(SGDMDocumentationParsing::autoLinkIgnore.contains(autoLinkTarget) == true || (autoLinkTarget.length() >= 5 && autoLinkTarget.substringLeft(5) == "SGCLP")){
             resolvedDirective += autoLinkTarget;
             continue;
         }

@@ -87,9 +87,8 @@ void SGDMSgmlGeneration::generateForNextClass(){
         fileContents += SGXString("@SG_ML_PAGENAME ") + moduleName + " Module Documentation\n";
         fileContents += SGXString("@SG_ML_TITLE ") + moduleName + "\n";
         fileContents += SGDMSgmlGeneration::createLink("list of classes in this module", "#sg_classlist") + "\n";
-        fileContents += "CMake commands:\n";
-        fileContents += SGXString("&#9;find_package(") + SGDMSgmlGeneration::createLink(SGDMSgmlGeneration::projectName, "../readme/readme") + " REQUIRED COMPONENTS " + moduleName + ")\n";
-        fileContents += SGXString("&#9;target_link_libraries(yourCMakeTarget PRIVATE ") + SGDMSgmlGeneration::createLink(SGDMSgmlGeneration::projectName, "../readme/readme") + "::" + moduleName + ")\n";
+        fileContents += SGXString("CMake target for BuildLah: ") + SGDMSgmlGeneration::createLink(SGDMSgmlGeneration::projectName, "../readme/readme") + "::" + moduleName + "\n";
+        fileContents += "see @SG_ML_L009015this link../tutorials/buildlah for more information about BuildLah\n";
         fileContents += "@SG_ML_BLANKLINE\n";
         for(int i=0; i<currentClass.members.at("").description.length(); i++){
             fileContents += SGXString("&#9;") + currentClass.members.at("").description.at(i) + "\n";
@@ -130,9 +129,8 @@ void SGDMSgmlGeneration::generateForNextClass(){
     fileContents += SGDMSgmlGeneration::createLink("implementation details", "#sg_implementationdetails") + "\n";
     fileContents += "@SG_ML_BLANKLINE\n";
     fileContents += SGXString("preprocessor file inclusion directive: #include <") + currentClass.headerPath.substringRight(currentClass.headerPath.length() - currentClass.headerPath.findFirstFromRight(SGXChar('/')) - 1) + ">\n";
-    fileContents += "CMake commands:\n";
-    fileContents += SGXString("&#9;find_package(") + SGDMSgmlGeneration::createLink(SGDMSgmlGeneration::projectName, "../readme/readme") + " REQUIRED COMPONENTS " + SGDMSgmlGeneration::createLink(currentClass.moduleName, SGXString("../modules/") + currentClass.moduleName.getLowerLanguageAware()) + ")\n";
-    fileContents += SGXString("&#9;target_link_libraries(yourCMakeTarget PRIVATE ") + SGDMSgmlGeneration::createLink(SGDMSgmlGeneration::projectName + "::" + currentClass.moduleName, SGXString("../modules/") + currentClass.moduleName.getLowerLanguageAware()) + ")\n";
+    fileContents += SGXString("CMake target for BuildLah: ") + SGDMSgmlGeneration::createLink(SGDMSgmlGeneration::projectName + "::" + currentClass.moduleName, SGXString("../modules/") + currentClass.moduleName.getLowerLanguageAware()) + "\n";
+    fileContents += "see @SG_ML_L009015this link../tutorials/buildlah for more information about BuildLah\n";
     if(currentClass.parentClass == ""){fileContents += "parent class: (none)\n";}
     else{fileContents += SGXString("parent class: ") + SGDMSgmlGeneration::createLink(currentClass.parentClass, currentClass.parentClass.getLowerLanguageAware()) + "\n";}
     if(currentClass.childrenClass.length() == 0){fileContents += "children classes: (none)\n";}
