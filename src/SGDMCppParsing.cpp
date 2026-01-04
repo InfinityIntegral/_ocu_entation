@@ -197,7 +197,7 @@ void SGDMCppParsing::processNextClass(){
         SGXString prefixClassName = className;
         if(prefixClassName.contains("::")){prefixClassName = prefixClassName.substringLeft(prefixClassName.findFirstFromLeft("::"));}
         members.at(index).replace("Iterator", prefixClassName + "::Iterator").replace(SGXString("Const") + prefixClassName + "::Iterator", prefixClassName + "::ConstIterator").replace(SGXString("const") + prefixClassName + "::Iterator", "constIterator");
-        if(members.at(index).substringLeft(8) == "template"){members.at(index) = members.at(index).substringRight(members.at(index).length() - members.at(index).findFirstFromRight(SGXChar('>')) - 2);}
+        if(members.at(index).length() >= 8 && members.at(index).substringLeft(8) == "template"){members.at(index) = members.at(index).substringRight(members.at(index).length() - members.at(index).findFirstFromRight(SGXChar('>')) - 2);}
         (*SGDMCppParsing::membersList).pushBack(SGLPair<SGXString, SGXString>(className, members.at(index)));
     }
     

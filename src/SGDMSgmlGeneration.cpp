@@ -41,6 +41,9 @@ SGXString SGDMSgmlGeneration::createLink(const SGXString &linkText, const SGXStr
 }
 
 bool MemberOrdering::operator()(const SGDMCppMember* a, const SGDMCppMember* b){
+    if((*a).functionName == "" && (*b).functionName == ""){return false;}
+    if((*a).functionName == ""){return true;}
+    if((*b).functionName == ""){return false;}
     if((*a).functionName.at(0).isEnglishUppercase() == true && (*b).functionName.at(0).isEnglishUppercase() == false){return true;}
     if((*b).functionName.at(0).isEnglishUppercase() == true && (*a).functionName.at(0).isEnglishUppercase() == false){return false;}
     return ((*a).functionName < (*b).functionName);
@@ -255,7 +258,7 @@ void SGDMSgmlGeneration::generateForNextClass(){
     while(currentClassInHierarchy != nullptr){
         for(SGLUnorderedMap<SGXString, SGDMCppMember, SGLEqualsTo<SGXString>, SGLHash<SGXString>>::ConstIterator i = (*currentClassInHierarchy).members.constBegin(); i != (*currentClassInHierarchy).members.constEnd(); i++){
             if(i.value().isPrivateAPI == true){continue;}
-            if(i.value().functionName.at(0).isEnglishUppercase() == true && (*currentClassInHierarchy).className != currentClass.className){continue;}
+            if(i.value().functionName != "" && i.value().functionName.at(0).isEnglishUppercase() == true && (*currentClassInHierarchy).className != currentClass.className){continue;}
             functionList.pushBack(SGLPair<const SGDMCppMember*, SGXString>(&i.value(), (*currentClassInHierarchy).className));
         }
         if((*currentClassInHierarchy).parentClass == ""){currentClassInHierarchy = nullptr;}

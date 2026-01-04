@@ -60,10 +60,6 @@ bool SGDMUserInterface::checkFolderValidity(){
         SGWNotify::notify("project folder does not exist, not ok");
         return false;
     }
-    if(SGXFileSystem::folderExists((*SGDMUserInterface::destinationInput).getTextAsString()) == true && SGXFileSystem::getFolderSize((*SGDMUserInterface::destinationInput).getTextAsString()) != 0ll){
-        SGWNotify::notify("output folder has contents, not ok");
-        return false;
-    }
     SGDMUserInterface::setStoredPaths();
     SGDMResultsPage::showPage();
     SGDMDocumentationParsing::sourcePath = (*SGDMUserInterface::sourceInput).getTextAsString();
@@ -82,7 +78,7 @@ void SGDMUserInterface::getStoredPaths(){
     const SGXString filePath = SGXFileSystem::joinFilePaths(SGXFileSystem::configFilePath, "paths.sg");
     if(SGXFileSystem::fileExists(filePath) == false){return;}
     {
-        const SGXFile fileReader(filePath);
+        const SGXFile fileReader(filePath, SGXFile::ReadOnly);
         (*SGDMUserInterface::sourceInput).setTextFromString(fileReader.readString());
         (*SGDMUserInterface::destinationInput).setTextFromString(fileReader.readString());
     }
@@ -93,7 +89,7 @@ void SGDMUserInterface::setStoredPaths(){
     if(SGXFileSystem::fileExists(filePath) == true){SGXFileSystem::permanentDeleteFile(filePath);}
     SGXFileSystem::createFile(filePath);
     {
-        const SGXFile fileWriter(filePath);
+        const SGXFile fileWriter(filePath, SGXFile::WriteOnly);
         fileWriter.writeString((*SGDMUserInterface::sourceInput).getTextAsString());
         fileWriter.writeString((*SGDMUserInterface::destinationInput).getTextAsString());
     }
