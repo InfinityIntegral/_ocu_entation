@@ -22,12 +22,12 @@ SGWInput* SGDMUserInterface::destinationInput = nullptr;
 SGWLabel* SGDMUserInterface::destinationWarning = nullptr;
 
 void SGDMUserInterface::initialise(){
-    SGDMUserInterface::pageBackground = new SGWPageBackground(SGWWidget::parentWidget, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 8);
+    SGDMUserInterface::pageBackground = new SGWPageBackground(SGWWidget::parentWidget, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
     new SGWTextLabel(SGDMUserInterface::pageBackground, "project folder path:", 0.0f, 0.5f, 0.0f, 0.5f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, false);
-    SGDMUserInterface::sourceInput = new SGWTextInput(SGDMUserInterface::pageBackground, &SGDMUserInterface::checkSourcePath, 0.0f, 0.5f, 0.0f, 1.5f, 1.0f, -1.0f, 0.0f, 1.0f);
+    SGDMUserInterface::sourceInput = new SGWTextInput(SGDMUserInterface::pageBackground, "project folder", &SGDMUserInterface::checkSourcePath, 0.0f, 0.5f, 0.0f, 1.5f, 1.0f, -1.0f, 0.0f, 1.0f);
     SGDMUserInterface::sourceWarning = new SGWTextLabel(SGDMUserInterface::pageBackground, "this folder must exist", 0.0f, 0.5f, 0.0f, 2.5f, 1.0f, -1.0f, 0.0f, 0.75f, SGWHorizontalAlignment::Left, true);
     new SGWTextLabel(SGDMUserInterface::pageBackground, "output folder path:", 0.0f, 0.5f, 0.0f, 3.5f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, false);
-    SGDMUserInterface::destinationInput = new SGWTextInput(SGDMUserInterface::pageBackground, &SGDMUserInterface::checkDestinationPath, 0.0f, 0.5f, 0.0f, 4.5f, 1.0f, -1.0f, 0.0f, 1.0f);
+    SGDMUserInterface::destinationInput = new SGWTextInput(SGDMUserInterface::pageBackground,  "output folder", &SGDMUserInterface::checkDestinationPath, 0.0f, 0.5f, 0.0f, 4.5f, 1.0f, -1.0f, 0.0f, 1.0f);
     SGDMUserInterface::destinationWarning = new SGWTextLabel(SGDMUserInterface::pageBackground, "this folder must be empty or nonexistent", 0.0f, 0.5f, 0.0f, 5.5f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, true);
     new SGWTextButton(SGDMUserInterface::pageBackground, "generate HTML", &SGDMUserInterface::generateHTML, 0.5f, -4.0f, 0.0f, 7.0f, 0.0f, 8.0f, 0.0f, 1.0f);
     SGDMUserInterface::getStoredPaths();

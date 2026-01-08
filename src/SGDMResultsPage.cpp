@@ -19,10 +19,10 @@ void SGDMResultsPage::showPage(){
 }
 
 SGWBackground* SGDMResultsPage::initialisePage(){
-    SGWBackground* bg = new SGWPageBackground(SGWWidget::parentWidget, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 8);
+    SGWBackground* bg = new SGWPageBackground(SGWWidget::parentWidget, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
     SGDMResultsPage::currentInfo = new SGWTextLabel(bg, "starting processing...", 0.0f, 0.5f, 0.0f, 0.5f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, false);
     SGDMResultsPage::warningLabel = new SGWTextLabel(bg, "warnings: (none)", 0.0f, 0.5f, 0.0f, 2.0f, 1.0f, -1.0f, 0.0f, 1.0f, SGWHorizontalAlignment::Left, false);
-    SGDMResultsPage::warningList = new SGWSequentialScrollView(bg, 0.0f, 0.5f, 0.0f, 3.0f, 1.0f, -1.0f, 1.0f, -5.0f, 0.0f, 0.5f, 8);
+    SGDMResultsPage::warningList = new SGWSequentialScrollView(bg, 0.0f, 0.5f, 0.0f, 3.0f, 1.0f, -1.0f, 1.0f, -5.0f, 0.0f, 0.5f);
     return bg;
 }
 
